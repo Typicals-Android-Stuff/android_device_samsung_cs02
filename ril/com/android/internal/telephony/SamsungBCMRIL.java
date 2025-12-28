@@ -38,7 +38,7 @@ import java.util.ArrayList;
 public class SamsungBCMRIL extends RIL implements CommandsInterface {
     public SamsungBCMRIL(Context context, int networkMode, int cdmaSubscription) {
         super(context, networkMode, cdmaSubscription);
-        mQANElements = 6;
+        mQANElements = 5;
     }
 
     public void
@@ -66,6 +66,7 @@ public class SamsungBCMRIL extends RIL implements CommandsInterface {
     protected void
     processSolicited (Parcel p) {
         int serial, error;
+        boolean found = false;
 
         serial = p.readInt();
         error = p.readInt();
@@ -221,6 +222,7 @@ public class SamsungBCMRIL extends RIL implements CommandsInterface {
                     AsyncResult.forMessage(rr.mResult, null, tr);
                     rr.mResult.sendToTarget();
                 }
+                rr.release();
                 return;
             }
         }
@@ -249,6 +251,7 @@ public class SamsungBCMRIL extends RIL implements CommandsInterface {
 
         if (error != 0) {
             rr.onError(error, ret);
+            rr.release();
             return;
         }
 
@@ -260,7 +263,7 @@ public class SamsungBCMRIL extends RIL implements CommandsInterface {
             rr.mResult.sendToTarget();
         }
 
-        return;
+        rr.release();
     }
 
     @Override
@@ -289,7 +292,7 @@ public class SamsungBCMRIL extends RIL implements CommandsInterface {
             // hack taken from smdk4210ril class
             voiceSettings = p.readInt();
             //printing it to cosole for later investigation
-            Rlog.d(LOG_TAG, "Samsung magic = " + voiceSettings);
+            Rlog.d(RILJ_LOG_TAG, "Samsung magic = " + voiceSettings);
             dc.isVoicePrivacy = (0 != p.readInt());
             dc.number = p.readString();
             int np = p.readInt();
