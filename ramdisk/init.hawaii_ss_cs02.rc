@@ -43,7 +43,6 @@ on init
     mkdir /storage/sdcard1 0775 system system
     export SECONDARY_STORAGE /storage/sdcard1
     mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
-    mkdir /storage/sdcard1 0700 root root
 	
     #mkdir /storage/usbdisk 0775 system system
     #export SECONDARY_STORAGE /storage/usbdisk0
@@ -562,6 +561,12 @@ on post-fs
 #on property:persist.sys.storage_preload=0
 #    exec /system/bin/umount /preload 	
 
+on property:vold.decrypt=trigger_restart_framework
+    start fuse_sdcard1
+
+on nonencrypted
+    start fuse_sdcard1
+
 on property:ro.debuggable=1
     start console
 	
@@ -571,6 +576,11 @@ on property:ro.debuggable=1
 service sdcard /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
     class late_start
     oneshot
+	
+# External SD card FUSE daemon
+service fuse_sdcard1 /system/bin/sdcard /mnt/media_rw/sdcard1 /storage/sdcard1 1023 1023
+    class late_start
+    disabled
 
 # create filesystem if necessary
 	service setup_fs /system/bin/setup_fs \
